@@ -117,12 +117,12 @@ export default function ProductDetails({
               className="object-cover rounded-lg"
               
             />
-            <button
+            {/* <button
   onClick={addToWishlist}
   className="w-full bg-pink-500 text-white py-3 rounded-xl font-semibold mt-2"
 >
   ❤️ Add to Wishlist
-</button>
+</button> */}
           </div>
 
           {/* ✅ SIZE (Fashion আলাদা থাকবে) */}
@@ -201,7 +201,7 @@ export default function ProductDetails({
                   : addToWishlist({
                       ...product,
                       selectedOptions,
-                      selectedSize,
+                      
                       price: selectedVariant?.price || product.price,
                       image:
                         selectedVariant?.image || product.image,
