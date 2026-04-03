@@ -5,7 +5,7 @@ export default function BeautyMakeupPage() {
     <CategoryPage
       title="Beauty Makeup"
       category="Beauty"
-      subCategory="Makeup"
+      subCategory="makeup"
     />
   )
 }

@@ -7,7 +7,7 @@ export default function ChildrenPage() {
     <CategoryPage
       title="Children's Fashion"
       category="Fashion"
-       subCategory="Children"
+      subCategory="Children"
     />
   )
 }

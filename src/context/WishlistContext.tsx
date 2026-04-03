@@ -12,7 +12,7 @@ interface WishlistItem {
 
 interface WishlistContextType {
   wishlist: WishlistItem[];
-  addToWishlist: (item: WishlistItem) => void;
+  addToWishlist: (item: WishlistItem) => any;
   removeFromWishlist: (id: string, selectedOptions?: any) => void;
 }
 
