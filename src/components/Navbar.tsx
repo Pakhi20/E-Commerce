@@ -79,7 +79,7 @@ export default function Navbar() {
     <nav className="bg-blue-600 text-white relative">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         <Link href="/" className="text-2xl font-bold">
-          Pakhi's
+          Pakhi's Kart
         </Link>
 
         <div className="flex items-center gap-6 md:gap-8 relative">
