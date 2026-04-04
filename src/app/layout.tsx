@@ -1,15 +1,15 @@
-import "./globals.css"
-import Navbar from "@/components/Navbar"
+import "./globals.css";
+import Navbar from "@/components/Navbar";
 
-import { AuthProvider } from "@/context/AuthContext"
-import { CartProvider } from "@/context/CartContext"
-import { WishlistProvider } from "@/context/WishlistContext"
-import { OrderProvider } from "@/context/OrderContext"
+import { AuthProvider } from "@/context/AuthContext";
+import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
+import { OrderProvider } from "@/context/OrderContext";
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
@@ -26,7 +26,7 @@ export default function RootLayout({
         </AuthProvider>
       </body>
     </html>
-  )
+  );
 }
 
 
@@ -40,41 +40,59 @@ export default function RootLayout({
 
 
 
-// import "./globals.css"
-// import { CartProvider } from "@/context/CartContext"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import "./globals.css";
 // import Navbar from "@/components/Navbar"
+
 // import { AuthProvider } from "@/context/AuthContext"
+// import { CartProvider } from "@/context/CartContext"
+// import { WishlistProvider } from "@/context/WishlistContext"
+// import { OrderProvider } from "@/context/OrderContext"
 
 // export default function RootLayout({
 //   children,
 // }: {
 //   children: React.ReactNode
 // }) {
-
 //   return (
-
 //     <html lang="en">
-
 //       <body className="bg-gray-100 min-h-screen">
-
 //         <AuthProvider>
-
 //           <CartProvider>
-
-//             <Navbar />
-
-//             {children}
-            
-
+//             <WishlistProvider>
+//               <OrderProvider>
+//                 <Navbar />
+//                 {children}
+//               </OrderProvider>
+//             </WishlistProvider>
 //           </CartProvider>
-
 //         </AuthProvider>
-
 //       </body>
-
 //     </html>
-
 //   )
 // }
+
+
+
+
+
+
+
 
 

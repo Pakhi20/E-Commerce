@@ -1,3 +1,176 @@
+// "use client";
+
+// import { useState } from "react";
+// import { useRouter } from "next/navigation";
+// import { useAuth } from "@/context/AuthContext";
+
+// export default function SignInForm() {
+//   const router = useRouter();
+//   const { login } = useAuth(); // ✅ Context login
+
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+
+//   const handleSubmit = (e: React.FormEvent) => {
+//     e.preventDefault();
+
+//     // Simple login check (you can change later)
+//     if (email && password) {
+//       login();              // 🔥 VERY IMPORTANT
+//       router.push("/");     // Redirect to home
+//     } else {
+//       alert("Please enter email and password");
+//     }
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit}>
+//       <input
+//         type="email"
+//         placeholder="Email"
+//         className="w-full border p-2 mb-4 rounded"
+//         value={email}
+//         onChange={(e) => setEmail(e.target.value)}
+//       />
+
+//       <input
+//         type="password"
+//         placeholder="Password"
+//         className="w-full border p-2 mb-4 rounded"
+//         value={password}
+//         onChange={(e) => setPassword(e.target.value)}
+//       />
+
+//       <button
+//         type="submit"
+//         className="w-full bg-blue-600 text-white py-2 rounded-lg"
+//       >
+//         Login
+//       </button>
+//     </form>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 "use client"
 
 import { useState } from "react"
