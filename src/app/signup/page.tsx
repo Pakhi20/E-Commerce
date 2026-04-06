@@ -80,6 +80,10 @@ export default function SignupPage() {
     localStorage.setItem("user", JSON.stringify(user))
 
     localStorage.setItem("isLoggedIn", "true")
+    localStorage.setItem("userEmail", email)
+    localStorage.setItem("userName", name)
+
+    window.dispatchEvent(new Event("loginUpdated"))
 
     alert("Account created successfully!")
 
@@ -500,3 +504,4 @@ export default function SignupPage() {
 //     </div>
 //   )
 // }
+
