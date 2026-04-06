@@ -25,7 +25,6 @@ export default function AddToCartButton({
 
   if (!variant) return null;
 
-  // ✅ FINAL FUNCTION
   const handleAction = (type: "cart" | "buy") => {
     const loginStatus =
       localStorage.getItem("isLoggedIn") ||
@@ -37,59 +36,49 @@ export default function AddToCartButton({
       return;
     }
 
-    // ✅ Size validation (only if product has sizes)
     if (product.sizes && !size) {
       alert("Please select size");
       return;
     }
 
-    // ✅ UNIVERSAL VARIANT OBJECT
-    const finalOptions = {
-      ...(options || {}),          // all variants (color, ram, storage etc.)
-      ...(size && { Size: size }), // size add (if exists)
-    };
-
-    // ✅ ADD TO CART
-    addToCart({
-      id: product.id,
-      title: product.title,
-      price: variant.price,
-      image: variant.image || product.image,
-      selectedOptions: finalOptions,
-    });
-
-    // trigger update
-    window.dispatchEvent(new Event("cartUpdated"));
-
-    if (type === "buy") {
-      router.push("/checkout");
-    } else {
-      router.push("/cart");
-    }
-  };
-
-  // ✅ AFTER LOGIN
-  const handleLoginSuccess = () => {
     const finalOptions = {
       ...(options || {}),
       ...(size && { Size: size }),
     };
 
-    addToCart({
-      id: product.id,
-      title: product.title,
-      price: variant.price,
-      image: variant.image || product.image,
-      selectedOptions: finalOptions,
-    });
+    // 🛒 ADD TO CART
+    if (type === "cart") {
+      addToCart({
+        id: product.id,
+        title: product.title,
+        price: variant.price,
+        image: variant.image || product.image,
+        selectedOptions: finalOptions,
+      });
 
-    window.dispatchEvent(new Event("cartUpdated"));
-
-    if (actionType === "buy") {
-      router.push("/checkout");
-    } else {
+      window.dispatchEvent(new Event("cartUpdated"));
       router.push("/cart");
     }
+
+    // ⚡ BUY NOW (NO addToCart)
+    if (type === "buy") {
+      const productData = {
+        id: product.id,
+        title: product.title,
+        price: variant.price,
+        image: variant.image || product.image,
+        selectedOptions: finalOptions,
+        quantity: 1,
+      };
+
+      localStorage.setItem("buyNowItem", JSON.stringify(productData));
+      router.push("/checkout?type=buynow");
+    }
+  };
+
+  // AFTER LOGIN
+  const handleLoginSuccess = () => {
+    handleAction(actionType);
   };
 
   return (
@@ -123,6 +112,194 @@ export default function AddToCartButton({
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// "use client";
+
+// import { useRouter } from "next/navigation";
+// import { useCart } from "@/context/CartContext";
+// import { Product, Variant } from "@/types/product";
+// import { useState } from "react";
+// import LoginModal from "./LoginModal";
+// import { ShoppingBasket, ShoppingBag } from "lucide-react";
+
+// export default function AddToCartButton({
+//   product,
+//   size,
+//   variant,
+//   options,
+// }: {
+//   product: Product;
+//   size?: string;
+//   variant?: Variant;
+//   options?: any;
+// }) {
+//   const { addToCart } = useCart();
+//   const router = useRouter();
+//   const [showLoginModal, setShowLoginModal] = useState(false);
+//   const [actionType, setActionType] = useState<"cart" | "buy">("cart");
+
+//   if (!variant) return null;
+
+//   // ✅ FINAL FUNCTION
+//   const handleAction = (type: "cart" | "buy") => {
+//     const loginStatus =
+//       localStorage.getItem("isLoggedIn") ||
+//       sessionStorage.getItem("isLoggedIn");
+
+//     if (loginStatus !== "true") {
+//       setActionType(type);
+//       setShowLoginModal(true);
+//       return;
+//     }
+
+//     // ✅ Size validation (only if product has sizes)
+//     if (product.sizes && !size) {
+//       alert("Please select size");
+//       return;
+//     }
+
+//     // ✅ UNIVERSAL VARIANT OBJECT
+//     const finalOptions = {
+//       ...(options || {}),          // all variants (color, ram, storage etc.)
+//       ...(size && { Size: size }), // size add (if exists)
+//     };
+
+//     // ✅ ADD TO CART
+//     addToCart({
+//       id: product.id,
+//       title: product.title,
+//       price: variant.price,
+//       image: variant.image || product.image,
+//       selectedOptions: finalOptions,
+//     });
+
+//     // trigger update
+//     window.dispatchEvent(new Event("cartUpdated"));
+
+//     if (type === "buy") {
+//       router.push("/checkout");
+//     } else {
+//       router.push("/cart");
+//     }
+//   };
+
+//   // ✅ AFTER LOGIN
+//   const handleLoginSuccess = () => {
+//     const finalOptions = {
+//       ...(options || {}),
+//       ...(size && { Size: size }),
+//     };
+
+//     addToCart({
+//       id: product.id,
+//       title: product.title,
+//       price: variant.price,
+//       image: variant.image || product.image,
+//       selectedOptions: finalOptions,
+//     });
+
+//     window.dispatchEvent(new Event("cartUpdated"));
+
+//     if (actionType === "buy") {
+//       router.push("/checkout");
+//     } else {
+//       router.push("/cart");
+//     }
+//   };
+
+//   return (
+//     <>
+//       <div className="mt-6 flex gap-4">
+//         {/* Add to Cart */}
+//         <button
+//           onClick={() => handleAction("cart")}
+//           className="flex-1 bg-blue-600 text-white py-3 rounded-xl flex items-center justify-center"
+//         >
+//           <ShoppingBasket className="mr-2" size={18} />
+//           <span>Add to Cart</span>
+//         </button>
+
+//         {/* Buy Now */}
+//         <button
+//           onClick={() => handleAction("buy")}
+//           className="flex-1 bg-orange-600 text-white py-3 rounded-xl flex items-center justify-center"
+//         >
+//           <ShoppingBag className="mr-2" size={18} />
+//           <span>Buy Now</span>
+//         </button>
+//       </div>
+
+//       {/* Login Modal */}
+//       <LoginModal
+//         isOpen={showLoginModal}
+//         onClose={() => setShowLoginModal(false)}
+//         onSuccess={handleLoginSuccess}
+//       />
+//     </>
+//   );
+// }
 
 
 

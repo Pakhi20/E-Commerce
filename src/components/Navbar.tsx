@@ -10,11 +10,13 @@ import ProfileMenu from "@/components/ProfileMenu";
 import { Heart } from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
 
+
 export default function Navbar() {
   const { cart } = useCart();
   const { wishlist } = useWishlist();
   const router = useRouter();
-
+  const { clearCart } = useCart();
+const { clearWishlist } = useWishlist();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -44,14 +46,36 @@ export default function Navbar() {
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    sessionStorage.removeItem("isLoggedIn");
+  // const handleLogout = () => {
+  //   localStorage.removeItem("isLoggedIn");
+  //   sessionStorage.removeItem("isLoggedIn");
 
-    window.dispatchEvent(new Event("loginUpdated"));
-    setIsLoggedIn(false);
-    router.push("/login");
-  };
+  //   window.dispatchEvent(new Event("loginUpdated"));
+  //   setIsLoggedIn(false);
+  //   router.push("/login");
+  // };
+
+
+const handleLogout = () => {
+  // Clear cart & wishlist
+  clearCart();
+  clearWishlist();
+
+  // Remove login status
+  localStorage.removeItem("isLoggedIn");
+  sessionStorage.removeItem("isLoggedIn");
+
+  // Remove user/token if exists
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+
+  // Update UI
+  window.dispatchEvent(new Event("loginUpdated"));
+  setIsLoggedIn(false);
+
+  // Redirect
+  router.push("/login");
+};
 
   const totalCartItems = cart.reduce(
     (sum: number, item: any) => sum + item.quantity,

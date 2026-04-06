@@ -1,12 +1,12 @@
 // ✅ Variant Type (Updated)
 export interface Variant {
-  size?: string;         // Added size
+  size?: string;         
   color?: string;
   storage?: string;
   ram?: string;
   price: number;
   image?: string;
-  [key: string]: any;    // Flexible for future variant fields
+  [key: string]: any;   
 }
 
 // ✅ Product Type (Updated)
