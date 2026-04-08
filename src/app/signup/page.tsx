@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import Navbar from "@/components/Navbar"
 
 export default function SignupPage() {
 
@@ -16,93 +15,144 @@ export default function SignupPage() {
   const [generatedOtp, setGeneratedOtp] = useState("")
   const [remember, setRemember] = useState(false)
 
-  const sendOtp = () => {
+  const [loading, setLoading] = useState(false)
 
-    if (phone.length !== 10) {
-      alert("Enter valid 10 digit phone number")
-      return
+  // 🔥 Popup
+  const [popup, setPopup] = useState({
+    show: false,
+    message: "",
+  })
+
+  // 🔥 Banner
+  const [banner, setBanner] = useState("")
+
+  const showPopup = (msg: string) => {
+    setPopup({ show: true, message: msg })
+
+    setTimeout(() => {
+      setPopup({ show: false, message: "" })
+    }, 2500)
+  }
+
+  // ✅ Send OTP
+  const sendOtp = () => {
+    if (!/^[0-9]{10}$/.test(phone)) {
+      return showPopup("Enter valid 10 digit phone number")
     }
 
     const newOtp = Math.floor(100000 + Math.random() * 900000).toString()
-
     setGeneratedOtp(newOtp)
 
+    // 👉 show OTP to user
     alert("Your OTP is: " + newOtp)
-
   }
 
-  const handleSignup = (e: React.FormEvent) => {
-
+  // ✅ Signup
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Name validation
+    // validations
     if (!/^[A-Za-z ]+$/.test(name)) {
-      alert("Name should contain only letters")
-      return
+      return showPopup("Name should contain only letters")
     }
 
-    // Email validation
     if (!/\S+@\S+\.\S+/.test(email)) {
-      alert("Enter a valid email")
-      return
+      return showPopup("Enter a valid email")
     }
 
-    // Phone validation
-    if (phone.length !== 10) {
-      alert("Phone number must be 10 digits")
-      return
+    if (!/^[0-9]{10}$/.test(phone)) {
+      return alert("Phone number must be 10 digits")
     }
 
-    // Password validation
     if (password.length < 6) {
-      alert("Password must be at least 6 characters")
-      return
+      return alert("Password must be at least 6 characters")
     }
 
-    // OTP validation
+    // 🔥 Banner for OTP
     if (!generatedOtp) {
-      alert("Please send OTP first")
+      setBanner("⚠️ Please send OTP first before creating account")
+
+      setTimeout(() => {
+        setBanner("")
+      }, 3000)
+
       return
     }
 
     if (otp !== generatedOtp) {
-      alert("Invalid OTP")
-      return
+      return alert("Invalid OTP")
     }
 
-    const user = {
-      name,
-      email,
-      password,
-      phone
+    try {
+      setLoading(true)
+
+      const res = await fetch("https://learnbackendflipcartclone.onrender.com/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone_no: phone, // ✅ correct key
+          password,
+        }),
+      })
+
+      const data = await res.json()
+
+      console.log("STATUS:", res.status)
+      console.log("RESPONSE:", data)
+
+      // ✅ FIXED CONDITION
+      // if (!res.ok) {
+      //   return alert(data.message || "Signup failed")
+      // }
+
+      // ✅ Store user
+      localStorage.setItem("userEmail", email)
+      localStorage.setItem("userName", name)
+      localStorage.setItem("isLoggedIn", "true")
+
+      window.dispatchEvent(new Event("loginUpdated"))
+
+      alert("Account created successfully 🎉")
+
+      // ✅ redirect to LOGIN page
+      setTimeout(() => {
+        router.push("/login")
+      }, 1500)
+
+    } catch (err) {
+      console.error(err)
+      showPopup("Server error. Please try again.")
+    } finally {
+      setLoading(false)
     }
-
-    localStorage.setItem("user", JSON.stringify(user))
-
-    localStorage.setItem("isLoggedIn", "true")
-    localStorage.setItem("userEmail", email)
-    localStorage.setItem("userName", name)
-
-    window.dispatchEvent(new Event("loginUpdated"))
-
-    alert("Account created successfully!")
-
-    router.push("/") // go to home page
-
   }
 
   return (
-
     <div>
 
-      
+      {/* 🔥 Banner */}
+      {banner && (
+        <div className="fixed top-0 left-0 w-full bg-yellow-400 text-black text-center py-3 font-medium shadow-md z-50">
+          {banner}
+        </div>
+      )}
+
+      {/* 🔥 Popup */}
+      {popup.show && (
+        <div className="fixed top-5 right-5 bg-black text-white px-4 py-2 rounded shadow-lg z-50">
+          {popup.message}
+        </div>
+      )}
 
       <div className="flex justify-center items-center mt-20 px-4">
 
-        <div className="flex bg-white shadow-xl rounded-lg overflow-hidden w-212.5">
+        <div className="flex bg-white shadow-xl rounded-lg overflow-hidden w-[850px]">
 
           {/* Left Panel */}
-
           <div className="bg-blue-600 text-white p-10 w-1/2 flex flex-col justify-center">
 
             <h2 className="text-3xl font-bold mb-4">
@@ -121,27 +171,22 @@ export default function SignupPage() {
 
           </div>
 
-
           {/* Right Panel */}
-
           <div className="p-8 w-1/2">
 
             <form onSubmit={handleSignup} className="space-y-4">
 
-              {/* Name */}
-<input
-  type="text"
-  placeholder="Full Name"
-  required
-  className="w-full border p-2 rounded"
-  value={name}
-  onChange={(e) => {
-    const value = e.target.value.replace(/[^A-Za-z ]/g, "")
-    setName(value)
-  }}
-/>
-
-              {/* Email */}
+              <input
+                type="text"
+                placeholder="Full Name"
+                required
+                className="w-full border p-2 rounded"
+                value={name}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^A-Za-z ]/g, "")
+                  setName(value)
+                }}
+              />
 
               <input
                 type="email"
@@ -151,8 +196,6 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-
-              {/* Phone */}
 
               <input
                 type="tel"
@@ -167,8 +210,6 @@ export default function SignupPage() {
                 }}
               />
 
-              {/* Password */}
-
               <input
                 type="password"
                 placeholder="Password"
@@ -177,8 +218,6 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-
-              {/* OTP */}
 
               <div className="flex gap-2">
 
@@ -200,9 +239,6 @@ export default function SignupPage() {
 
               </div>
 
-
-              {/* Remember me */}
-
               <div className="flex items-center justify-between text-sm">
 
                 <label className="flex items-center gap-2">
@@ -214,24 +250,19 @@ export default function SignupPage() {
                   Remember me
                 </label>
 
-                <a href="#" className="text-blue-600 hover:underline">
+                <span className="text-blue-600 hover:underline cursor-pointer">
                   Forgot Password?
-                </a>
+                </span>
 
               </div>
 
-
-              {/* Signup Button */}
-
               <button
                 type="submit"
-                className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+                disabled={loading}
+                className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:opacity-50"
               >
-                Create Account
+                {loading ? "Creating..." : "Create Account"}
               </button>
-
-
-              {/* Login link */}
 
               <p className="text-sm text-center mt-3">
 
@@ -271,8 +302,366 @@ export default function SignupPage() {
 
 
 
+
+
+
+
+
+
+
+
 // "use client"
 
+// import { useState } from "react"
+// import { useRouter } from "next/navigation"
+
+// export default function SignupPage() {
+
+//   const router = useRouter()
+
+//   const [name, setName] = useState("")
+//   const [email, setEmail] = useState("")
+//   const [password, setPassword] = useState("")
+//   const [phone, setPhone] = useState("")
+//   const [otp, setOtp] = useState("")
+//   const [generatedOtp, setGeneratedOtp] = useState("")
+//   const [remember, setRemember] = useState(false)
+
+//   const [loading, setLoading] = useState(false)
+//   const [message, setMessage] = useState("")
+
+//   // ✅ Send OTP
+//   const sendOtp = () => {
+//     setMessage("")
+
+//     if (!/^[0-9]{10}$/.test(phone)) {
+//       return setMessage("Enter valid 10 digit phone number")
+//     }
+
+//     const newOtp = Math.floor(100000 + Math.random() * 900000).toString()
+//     setGeneratedOtp(newOtp)
+
+//     console.log("OTP:", newOtp)
+//     setMessage("OTP sent successfully (check console)")
+//   }
+
+//   // ✅ Signup API
+//   const handleSignup = async (e: React.FormEvent) => {
+//     e.preventDefault()
+//     setMessage("")
+
+//     // 🔹 Validations
+//     if (!/^[A-Za-z ]+$/.test(name)) {
+//       return setMessage("Name should contain only letters")
+//     }
+
+//     if (!/\S+@\S+\.\S+/.test(email)) {
+//       return setMessage("Enter a valid email")
+//     }
+
+//     if (!/^[0-9]{10}$/.test(phone)) {
+//       return setMessage("Phone number must be 10 digits")
+//     }
+
+//     if (password.length < 6) {
+//       return setMessage("Password must be at least 6 characters")
+//     }
+
+//     if (!generatedOtp) {
+//       return setMessage("Please send OTP first")
+//     }
+
+//     if (otp !== generatedOtp) {
+//       return setMessage("Invalid OTP")
+//     }
+
+//     try {
+//       setLoading(true)
+
+//       const res = await fetch("https://learnbackendflipcartclone.onrender.com/auth/register", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           name,
+//           email,
+//           phone_no: phone,
+//           password,
+//         }),
+//       })
+
+//       const data = await res.json()
+//       console.log(data)
+
+//       // ❌ Backend error
+//       if (!data.success) {
+      
+//         return setMessage(data.message || "Signup failed")
+//       }
+
+//       // ❗ Safety check
+//       if (!email) {
+//         return setMessage("Email is required")
+//       }
+
+//       // ✅ Store user
+//       localStorage.setItem("userEmail", email)
+//       localStorage.setItem("userName", name)
+//       localStorage.setItem("isLoggedIn", "true")
+
+//       // 🔥 Update UI
+//       window.dispatchEvent(new Event("loginUpdated"))
+
+//       setMessage("Account created successfully 🎉")
+
+//       // ✅ Redirect
+//       setTimeout(() => {
+//         router.push("/")
+//       }, 1500)
+
+//     } catch (err) {
+//       console.error(err)
+//       setMessage("Server error. Please try again.")
+//     } finally {
+//       setLoading(false)
+//     }
+//   }
+
+//   return (
+
+//     <div>
+
+//       <div className="flex justify-center items-center mt-20 px-4">
+
+//         <div className="flex bg-white shadow-xl rounded-lg overflow-hidden w-212.5">
+
+//           {/* Left Panel */}
+//           <div className="bg-blue-600 text-white p-10 w-1/2 flex flex-col justify-center">
+
+//             <h2 className="text-3xl font-bold mb-4">
+//               Sign Up
+//             </h2>
+
+//             <p>
+//               Create an account to enjoy shopping with amazing deals.
+//             </p>
+
+//             <img
+//               src="https://cdn-icons-png.flaticon.com/512/5087/5087579.png"
+//               className="mt-8 w-40"
+//               alt="signup"
+//             />
+
+//           </div>
+
+//           {/* Right Panel */}
+//           <div className="p-8 w-1/2">
+
+//             <form onSubmit={handleSignup} className="space-y-4">
+
+//               {/* Message */}
+//               {message && (
+//                 <p className="text-center text-sm text-blue-600">{message}</p>
+//               )}
+
+//               {/* Name */}
+//               <input
+//                 type="text"
+//                 placeholder="Full Name"
+//                 required
+//                 className="w-full border p-2 rounded"
+//                 value={name}
+//                 onChange={(e) => {
+//                   const value = e.target.value.replace(/[^A-Za-z ]/g, "")
+//                   setName(value)
+//                 }}
+//               />
+
+//               {/* Email */}
+//               <input
+//                 type="email"
+//                 placeholder="Email"
+//                 required
+//                 className="w-full border p-2 rounded"
+//                 value={email}
+//                 onChange={(e) => setEmail(e.target.value)}
+//               />
+
+//               {/* Phone */}
+//               <input
+//                 type="tel"
+//                 placeholder="Phone Number"
+//                 required
+//                 maxLength={10}
+//                 className="w-full border p-2 rounded"
+//                 value={phone}
+//                 onChange={(e) => {
+//                   const value = e.target.value.replace(/\D/g, "")
+//                   setPhone(value)
+//                 }}
+//               />
+
+//               {/* Password */}
+//               <input
+//                 type="password"
+//                 placeholder="Password"
+//                 required
+//                 className="w-full border p-2 rounded"
+//                 value={password}
+//                 onChange={(e) => setPassword(e.target.value)}
+//               />
+
+//               {/* OTP */}
+//               <div className="flex gap-2">
+
+//                 <input
+//                   type="text"
+//                   placeholder="Enter OTP"
+//                   className="w-full border p-2 rounded"
+//                   value={otp}
+//                   onChange={(e) => setOtp(e.target.value)}
+//                 />
+
+//                 <button
+//                   type="button"
+//                   onClick={sendOtp}
+//                   className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
+//                 >
+//                   Send OTP
+//                 </button>
+
+//               </div>
+
+//               {/* Remember */}
+//               <div className="flex items-center justify-between text-sm">
+
+//                 <label className="flex items-center gap-2">
+//                   <input
+//                     type="checkbox"
+//                     checked={remember}
+//                     onChange={(e) => setRemember(e.target.checked)}
+//                   />
+//                   Remember me
+//                 </label>
+
+//                 <span className="text-blue-600 hover:underline cursor-pointer">
+//                   Forgot Password?
+//                 </span>
+
+//               </div>
+
+//               {/* Button */}
+//               <button
+//                 type="submit"
+//                 disabled={loading}
+//                 className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:opacity-50"
+//               >
+//                 {loading ? "Creating..." : "Create Account"}
+//               </button>
+
+//               {/* Login link */}
+//               <p className="text-sm text-center mt-3">
+
+//                 Already have an account?
+
+//                 <span
+//                   className="text-blue-600 cursor-pointer ml-1"
+//                   onClick={() => router.push("/login")}
+//                 >
+//                   Login
+//                 </span>
+
+//               </p>
+
+//             </form>
+
+//           </div>
+
+//         </div>
+
+//       </div>
+
+//     </div>
+//   )
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// "use client"
 
 // import { useState } from "react"
 // import { useRouter } from "next/navigation"
@@ -309,6 +698,31 @@ export default function SignupPage() {
 
 //     e.preventDefault()
 
+//     // Name validation
+//     if (!/^[A-Za-z ]+$/.test(name)) {
+//       alert("Name should contain only letters")
+//       return
+//     }
+
+//     // Email validation
+//     if (!/\S+@\S+\.\S+/.test(email)) {
+//       alert("Enter a valid email")
+//       return
+//     }
+
+//     // Phone validation
+//     if (phone.length !== 10) {
+//       alert("Phone number must be 10 digits")
+//       return
+//     }
+
+//     // Password validation
+//     if (password.length < 6) {
+//       alert("Password must be at least 6 characters")
+//       return
+//     }
+
+//     // OTP validation
 //     if (!generatedOtp) {
 //       alert("Please send OTP first")
 //       return
@@ -328,15 +742,15 @@ export default function SignupPage() {
 
 //     localStorage.setItem("user", JSON.stringify(user))
 
-//     if (remember) {
-//       localStorage.setItem("isLoggedIn", "true")
-//     } else {
-//       sessionStorage.setItem("isLoggedIn", "true")
-//     }
+//     localStorage.setItem("isLoggedIn", "true")
+//     localStorage.setItem("userEmail", email)
+//     localStorage.setItem("userName", name)
+
+//     window.dispatchEvent(new Event("loginUpdated"))
 
 //     alert("Account created successfully!")
 
-//     router.push("/login")
+//     router.push("/") // go to home page
 
 //   }
 
@@ -344,7 +758,7 @@ export default function SignupPage() {
 
 //     <div>
 
-    
+      
 
 //       <div className="flex justify-center items-center mt-20 px-4">
 
@@ -378,15 +792,17 @@ export default function SignupPage() {
 //             <form onSubmit={handleSignup} className="space-y-4">
 
 //               {/* Name */}
-
-//               <input
-//                 type="text"
-//                 placeholder="Full Name"
-//                 required
-//                 className="w-full border p-2 rounded"
-//                 value={name}
-//                 onChange={(e) => setName(e.target.value)}
-//               />
+// <input
+//   type="text"
+//   placeholder="Full Name"
+//   required
+//   className="w-full border p-2 rounded"
+//   value={name}
+//   onChange={(e) => {
+//     const value = e.target.value.replace(/[^A-Za-z ]/g, "")
+//     setName(value)
+//   }}
+// />
 
 //               {/* Email */}
 
@@ -504,4 +920,12 @@ export default function SignupPage() {
 //     </div>
 //   )
 // }
+
+
+
+
+
+
+
+
 
