@@ -19,8 +19,31 @@ export default function ProfilePage() {
   })
 
   const [errors, setErrors] = useState<any>({})
+//   useEffect(() => {
+//   const loadUser = () => {
+//     const loginStatus = localStorage.getItem("isLoggedIn")
+//     localStorage.removeItem("userName")
+// localStorage.removeItem("userEmail")
+// localStorage.removeItem("userPhone")
 
+//     if (loginStatus === "true") {
+//       setIsLoggedIn(true)
+
+//       const data = {
+//         name: localStorage.getItem("userName") || "User",
+//         email: localStorage.getItem("userEmail") || "No Email",
+//         phone: localStorage.getItem("userPhone") || "",
+//         address: localStorage.getItem("userAddress") || ""
+//       }
+
+//       setUser(data)
+//       setFormData(data)
+//     }
+//   }
+
+  // loadUser()
   useEffect(() => {
+  const loadUser = () => {
     const loginStatus = localStorage.getItem("isLoggedIn")
 
     if (loginStatus === "true") {
@@ -36,7 +59,60 @@ export default function ProfilePage() {
       setUser(data)
       setFormData(data)
     }
-  }, [])
+  }
+
+  loadUser()
+
+  window.addEventListener("loginUpdated", loadUser)
+
+  return () => window.removeEventListener("loginUpdated", loadUser)
+
+}, [])
+
+//   window.addEventListener("loginUpdated", loadUser)
+
+//   return () => window.removeEventListener("loginUpdated", loadUser)
+
+// }, [])
+
+  // useEffect(() => {
+  //   const loginStatus = localStorage.getItem("isLoggedIn")
+
+  //   if (loginStatus === "true") {
+  //     setIsLoggedIn(true)
+
+  //     const data = {
+  //       name: localStorage.getItem("userName") || "User",
+  //       email: localStorage.getItem("userEmail") || "No Email",
+  //       phone: localStorage.getItem("userPhone") || "",
+  //       address: localStorage.getItem("userAddress") || ""
+  //     }
+
+  //     setUser(data)
+  //     setFormData(data)
+  //   }
+  // }, [])
+
+  const handleLogout = () => {
+  // Clear cart & wishlist
+  clearCart();
+  clearWishlist();
+
+  // Remove login status
+  localStorage.removeItem("isLoggedIn");
+  sessionStorage.removeItem("isLoggedIn");
+
+  // Remove user/token if exists
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+
+  // Update UI
+  window.dispatchEvent(new Event("loginUpdated"));
+  setIsLoggedIn(false);
+
+  // Redirect
+  router.push("/login");
+};
 
   // ✅ Validation
   const validate = (field: string, value: string) => {
@@ -289,7 +365,7 @@ export default function ProfilePage() {
             Home
           </button>
 
-          <button
+          {/* <button
             onClick={() => {
               localStorage.clear()
               router.push("/")
@@ -297,7 +373,13 @@ export default function ProfilePage() {
             className="bg-red-500 text-white px-4 py-2 rounded"
           >
             Logout
-          </button>
+          </button> */}
+               <button
+                onClick={handleLogout}
+                className="bg-white text-red-600 px-4 py-2 rounded-lg font-medium"
+              >
+                Logout
+              </button>
 
         </div>
 
@@ -328,4 +410,12 @@ export default function ProfilePage() {
 
 
 
+
+function clearCart() {
+  throw new Error("Function not implemented.")
+}
+
+function clearWishlist() {
+  throw new Error("Function not implemented.")
+}
 

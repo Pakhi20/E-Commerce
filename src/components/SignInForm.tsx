@@ -1,9 +1,3 @@
-
-
-
-
-
-
 "use client"
 
 import { useState } from "react"
@@ -48,106 +42,82 @@ export default function SignInForm({ onSuccess }: Props) {
     e.preventDefault()
     setError("")
 
-    // ✅ Validation
-    if (!/^[A-Za-z\s]+$/.test(form.name)) {
-      return setError("Name should contain only letters")
-    }
-
+    // ✅ validations (kept)
     if (!/^[0-9]{10}$/.test(form.phone)) {
       return setError("Phone must be 10 digits")
+    }
+
+    if (form.password.length < 6) {
+      return setError("Password must be at least 6 characters")
     }
 
     try {
       setLoading(true)
 
-      // const res = await fetch("https://learnbackendflipcartclone.onrender.com/auth/login", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     name: form.name,
-      //     email: form.email,
-      //     phone_no: form.phone,
-      //     password: form.password,
-      //   }),
-      // })
-
-      // const data = await res.json()
-      // console.log(data)
-
-
-
-
-//       const res = await fetch("https://learnbackendflipcartclone.onrender.com/auth/login", {
-//   method: "POST",
-//   headers: {
-//     "Content-Type": "application/json",
-//   },
-//   body: JSON.stringify({
-//     email: form.email,
-//     password: form.password,
-//   }),
-// })
-
-const res = await fetch("https://learnbackendflipcartclone.onrender.com/auth/login", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    phone_no: form.phone,   // 🔥 use phone instead of email
-    password: form.password,
-  }),
-})
-
-
-const data = await res.json()
-
-console.log("STATUS:", res.status)
-console.log("LOGIN RESPONSE:", data)
-
-      // ❌ Backend error
-      // if (!data.success) {
-      //   return alert(data.message || "Invalid credentials")
+      // const body = {
+      //  name: form.name,
+      //  email: form.email,
+      //   phone: form.phone, // 🔥 FIX (important)
+      //   password: form.password,
       // }
+      const payload = {
+  name: form.name,
+  email: form.email,
+  phone_no: form.phone,
+  password: form.password,
+}
 
-      // ❗ Email missing check
-      // if (!data?.user?.email) {
-      //   return setError("Email is required for login")
-      // }
+      console.log("LOGIN BODY:", payload)
 
-      // ✅ Store user
-      // localStorage.setItem("userEmail", data.user.email)
-      // localStorage.setItem("userName", data.user.name || "")
+      const res = await fetch("https://learnbackendflipcartclone.onrender.com/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json()
+      console.log("LOGIN RESPONSE:", data)
+      
+
+      if (!res.ok) {
+        return setError(data.error || "Invalid credentials ❌")
+      }
+
+      // ✅ safe fallback (if backend doesn't return name/email)
+      const userName = data.name || form.name || "User"
+      const userEmail = data.email || form.email || ""
+
+      login({
+        name: userName,
+        email: userEmail,
+        phone: form.phone,
+        password: form.password,
+      })
+
+      localStorage.setItem("userName", userName)
+      localStorage.setItem("userEmail", userEmail)
       localStorage.setItem("isLoggedIn", "true")
 
-      // 🔥 Update UI
       window.dispatchEvent(new Event("loginUpdated"))
-      login()
 
-      // ✅ Modal close support
-      if (onSuccess) onSuccess()
-
-      // ✅ Redirect
       router.push("/")
 
     } catch (err) {
       console.error(err)
-      setError("Server error. Please try again.")
+      setError("Server error. Try again.")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-md mx-auto">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
 
-      <h2 className="text-2xl font-bold text-center">Login</h2>
+      <h2 className="text-xl font-bold text-center">Login</h2>
 
-      {error && (
-        <p className="text-red-500 text-sm text-center">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
       <input
         name="name"
@@ -174,7 +144,6 @@ console.log("LOGIN RESPONSE:", data)
         className="border p-2 rounded"
         value={form.email}
         onChange={handleChange}
-        required
       />
 
       <input
@@ -201,8 +170,6 @@ console.log("LOGIN RESPONSE:", data)
     </form>
   )
 }
-
-
 
 
 

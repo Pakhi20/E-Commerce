@@ -2,6 +2,10 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link";
+// import AddressesPage from '../addresses/page';
+// import { Link as LinkIcon } from "lucide-react"
+
 
 export default function SignupPage() {
 
@@ -17,65 +21,57 @@ export default function SignupPage() {
 
   const [loading, setLoading] = useState(false)
 
-  // 🔥 Popup
   const [popup, setPopup] = useState({
     show: false,
     message: "",
   })
 
-  // 🔥 Banner
   const [banner, setBanner] = useState("")
 
   const showPopup = (msg: string) => {
     setPopup({ show: true, message: msg })
-
     setTimeout(() => {
       setPopup({ show: false, message: "" })
     }, 2500)
   }
 
-  // ✅ Send OTP
+  // ✅ OTP
   const sendOtp = () => {
     if (!/^[0-9]{10}$/.test(phone)) {
-      return showPopup("Enter valid 10 digit phone number")
+      return alert("Enter valid 10 digit phone number")
     }
 
     const newOtp = Math.floor(100000 + Math.random() * 900000).toString()
     setGeneratedOtp(newOtp)
 
-    // 👉 show OTP to user
     alert("Your OTP is: " + newOtp)
   }
 
-  // ✅ Signup
+  // ✅ SIGNUP
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // validations
+    // ✅ validations
     if (!/^[A-Za-z ]+$/.test(name)) {
-      return showPopup("Name should contain only letters")
+      return alert("Name should contain only letters")
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-      return showPopup("Enter a valid email")
+      return alert("Enter a valid email")
     }
 
     if (!/^[0-9]{10}$/.test(phone)) {
-      return alert("Phone number must be 10 digits")
+      return alert("Phone must be 10 digits")
     }
 
     if (password.length < 6) {
       return alert("Password must be at least 6 characters")
     }
 
-    // 🔥 Banner for OTP
+    // ✅ OTP check BEFORE API
     if (!generatedOtp) {
       setBanner("⚠️ Please send OTP first before creating account")
-
-      setTimeout(() => {
-        setBanner("")
-      }, 3000)
-
+      setTimeout(() => setBanner(""), 3000)
       return
     }
 
@@ -86,41 +82,49 @@ export default function SignupPage() {
     try {
       setLoading(true)
 
-      const res = await fetch("https://learnbackendflipcartclone.onrender.com/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          phone_no: phone, // ✅ correct key
-          password,
-        }),
-      })
+      // inside handleSignup body
+
+const body = {
+  name,
+  email,
+ 
+  phone_no: phone, // 🔥 ADD THIS LINE (IMPORTANT)
+  password,
+}
+
+      console.log("SIGNUP DATA:", body)
+
+      const res = await fetch(
+        "https://learnbackendflipcartclone.onrender.com/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }
+      )
 
       const data = await res.json()
 
       console.log("STATUS:", res.status)
       console.log("RESPONSE:", data)
 
-      // ✅ FIXED CONDITION
-      // if (!res.ok) {
-      //   return alert(data.message || "Signup failed")
-      // }
+      if (!res.ok) {
+        return alert(data.error || "Signup failed ❌")
+      }
 
-      // ✅ Store user
-      localStorage.setItem("userEmail", email)
-      localStorage.setItem("userName", name)
+      // ✅ store user
+      localStorage.setItem("userName", data.name)
+      localStorage.setItem("userEmail", data.email)
       localStorage.setItem("isLoggedIn", "true")
 
       window.dispatchEvent(new Event("loginUpdated"))
 
       alert("Account created successfully 🎉")
 
-      // ✅ redirect to LOGIN page
       setTimeout(() => {
-        router.push("/login")
+        router.push("/")
       }, 1500)
 
     } catch (err) {
@@ -133,15 +137,12 @@ export default function SignupPage() {
 
   return (
     <div>
-
-      {/* 🔥 Banner */}
       {banner && (
         <div className="fixed top-0 left-0 w-full bg-yellow-400 text-black text-center py-3 font-medium shadow-md z-50">
           {banner}
         </div>
       )}
 
-      {/* 🔥 Popup */}
       {popup.show && (
         <div className="fixed top-5 right-5 bg-black text-white px-4 py-2 rounded shadow-lg z-50">
           {popup.message}
@@ -149,145 +150,423 @@ export default function SignupPage() {
       )}
 
       <div className="flex justify-center items-center mt-20 px-4">
-
         <div className="flex bg-white shadow-xl rounded-lg overflow-hidden w-[850px]">
 
-          {/* Left Panel */}
+          {/* LEFT SAME */}
           <div className="bg-blue-600 text-white p-10 w-1/2 flex flex-col justify-center">
-
-            <h2 className="text-3xl font-bold mb-4">
-              Sign Up
-            </h2>
-
-            <p>
-              Create an account to enjoy shopping with amazing deals.
-            </p>
-
+            <h2 className="text-3xl font-bold mb-4">Sign Up</h2>
+            <p>Create an account to enjoy shopping with amazing deals.</p>
             <img
               src="https://cdn-icons-png.flaticon.com/512/5087/5087579.png"
               className="mt-8 w-40"
               alt="signup"
             />
-
           </div>
 
-          {/* Right Panel */}
+          {/* RIGHT SAME */}
           <div className="p-8 w-1/2">
-
             <form onSubmit={handleSignup} className="space-y-4">
 
-              <input
-                type="text"
-                placeholder="Full Name"
-                required
+              <input type="text" placeholder="Full Name" required
                 className="w-full border p-2 rounded"
                 value={name}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^A-Za-z ]/g, "")
-                  setName(value)
-                }}
+                onChange={(e) => setName(e.target.value.replace(/[^A-Za-z ]/g, ""))}
               />
 
-              <input
-                type="email"
-                placeholder="Email"
-                required
+              <input type="email" placeholder="Email" required
                 className="w-full border p-2 rounded"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
 
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                required
-                maxLength={10}
+              <input type="tel" placeholder="Phone Number" required maxLength={10}
                 className="w-full border p-2 rounded"
                 value={phone}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, "")
-                  setPhone(value)
-                }}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
               />
 
-              <input
-                type="password"
-                placeholder="Password"
-                required
+              <input type="password" placeholder="Password" required
                 className="w-full border p-2 rounded"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
 
               <div className="flex gap-2">
-
-                <input
-                  type="text"
-                  placeholder="Enter OTP"
+                <input type="text" placeholder="Enter OTP"
                   className="w-full border p-2 rounded"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                 />
 
-                <button
-                  type="button"
-                  onClick={sendOtp}
-                  className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
-                >
+                <button type="button" onClick={sendOtp}
+                  className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700">
                   Send OTP
                 </button>
-
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(e) => setRemember(e.target.checked)}
-                  />
-                  Remember me
-                </label>
-
-                <span className="text-blue-600 hover:underline cursor-pointer">
-                  Forgot Password?
-                </span>
-
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:opacity-50"
-              >
+              <button type="submit" disabled={loading}
+                className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
                 {loading ? "Creating..." : "Create Account"}
               </button>
+           
 
-              <p className="text-sm text-center mt-3">
+<p className="text-sm text-center mt-3">
+  Already have an account?{" "}
+  <Link
+    href="/login"
+    className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+  >
+    Login
+  </Link>
+</p>
 
-                Already have an account?
-
-                <span
-                  className="text-blue-600 cursor-pointer ml-1"
-                  onClick={() => router.push("/login")}
-                >
-                  Login
-                </span>
-
-              </p>
 
             </form>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   )
 }
+
+// "use client"
+
+// import { useState } from "react"
+// import { useRouter } from "next/navigation"
+
+// export default function SignupPage() {
+
+//   const router = useRouter()
+
+//   const [name, setName] = useState("")
+//   const [email, setEmail] = useState("")
+//   const [password, setPassword] = useState("")
+//   const [phone, setPhone] = useState("")
+//   const [otp, setOtp] = useState("")
+//   const [generatedOtp, setGeneratedOtp] = useState("")
+//   const [remember, setRemember] = useState(false)
+
+//   const [loading, setLoading] = useState(false)
+
+//   // 🔥 Popup
+//   const [popup, setPopup] = useState({
+//     show: false,
+//     message: "",
+//   })
+
+//   // 🔥 Banner
+//   const [banner, setBanner] = useState("")
+
+//   const showPopup = (msg: string) => {
+//     setPopup({ show: true, message: msg })
+
+//     setTimeout(() => {
+//       setPopup({ show: false, message: "" })
+//     }, 2500)
+//   }
+
+//   // ✅ Send OTP
+//   const sendOtp = () => {
+//     if (!/^[0-9]{10}$/.test(phone)) {
+//       return showPopup("Enter valid 10 digit phone number")
+//     }
+
+//     const newOtp = Math.floor(100000 + Math.random() * 900000).toString()
+//     setGeneratedOtp(newOtp)
+
+//     // 👉 show OTP to user
+//     alert("Your OTP is: " + newOtp)
+//   }
+
+//   // ✅ Signup
+//   // const handleSignup = async (e: React.FormEvent) => {
+//   //   e.preventDefault()
+
+//   //   // validations
+//   //   if (!/^[A-Za-z ]+$/.test(name)) {
+//   //     return showPopup("Name should contain only letters")
+//   //   }
+
+//   //   if (!/\S+@\S+\.\S+/.test(email)) {
+//   //     return showPopup("Enter a valid email")
+//   //   }
+
+//   //   if (!/^[0-9]{10}$/.test(phone)) {
+//   //     return alert("Phone number must be 10 digits")
+//   //   }
+
+//   //   if (password.length < 6) {
+//   //     return alert("Password must be at least 6 characters")
+//   //   }
+
+
+// const handleSignup = async (e: React.FormEvent) => {
+//   e.preventDefault();
+
+//   const body = {
+//     name,
+//     email,
+//     phone_no: phone,   // ✅ FIX HERE
+//     password,
+//   };
+
+//   console.log("SIGNUP DATA:", body);
+
+//   try {
+//     const res = await fetch(
+//       "https://learnbackendflipcartclone.onrender.com/auth/register",
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify(body),
+//       }
+//     );
+
+//     const data = await res.json();
+
+//     console.log("STATUS:", res.status);
+//     console.log("RESPONSE:", data);
+
+//     if (res.ok) {
+//       alert("Signup successful ✅");
+//       router.push("/");
+//     } else {
+//       alert(data.error || "Signup failed ❌");
+//     }
+//   } catch (error) {
+//     console.error("Signup error:", error);
+//   }
+
+
+
+//   //   // 🔥 Banner for OTP
+//     if (!generatedOtp) {
+//       setBanner("⚠️ Please send OTP first before creating account")
+
+//       setTimeout(() => {
+//         setBanner("")
+//       }, 3000)
+
+//       return
+//     }
+
+//     if (otp !== generatedOtp) {
+//       return alert("Invalid OTP")
+//     }
+
+//     try {
+//       setLoading(true)
+
+//       const res = await fetch("https://learnbackendflipcartclone.onrender.com/auth/register", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           name,
+//           email,
+//           phone_no: phone, // ✅ correct key
+//           password,
+//         }),
+//       })
+//       console.log("SIGNUP DATA:", {
+//   name,
+//   email,
+//   phone,
+//   password
+// })
+
+//       const data = await res.json()
+
+//       console.log("STATUS:", res.status)
+//       console.log("RESPONSE:", data)
+
+//       // ✅ FIXED CONDITION
+//       // if (!res.ok) {
+//       //   return alert(data.message || "Signup failed")
+//       // }
+
+//       // ✅ Store user
+//       localStorage.setItem("userEmail", email)
+//       localStorage.setItem("userName", name)
+//       localStorage.setItem("isLoggedIn", "true")
+
+//       window.dispatchEvent(new Event("loginUpdated"))
+
+//       alert("Account created successfully 🎉")
+
+//       // ✅ redirect to LOGIN page
+//       setTimeout(() => {
+//         router.push("/")
+//       }, 1500)
+
+//     } catch (err) {
+//       console.error(err)
+//       showPopup("Server error. Please try again.")
+//     } finally {
+//       setLoading(false)
+//     }
+//   }
+
+//   return (
+//     <div>
+
+//       {/* 🔥 Banner */}
+//       {banner && (
+//         <div className="fixed top-0 left-0 w-full bg-yellow-400 text-black text-center py-3 font-medium shadow-md z-50">
+//           {banner}
+//         </div>
+//       )}
+
+//       {/* 🔥 Popup */}
+//       {popup.show && (
+//         <div className="fixed top-5 right-5 bg-black text-white px-4 py-2 rounded shadow-lg z-50">
+//           {popup.message}
+//         </div>
+//       )}
+
+//       <div className="flex justify-center items-center mt-20 px-4">
+
+//         <div className="flex bg-white shadow-xl rounded-lg overflow-hidden w-[850px]">
+
+//           {/* Left Panel */}
+//           <div className="bg-blue-600 text-white p-10 w-1/2 flex flex-col justify-center">
+
+//             <h2 className="text-3xl font-bold mb-4">
+//               Sign Up
+//             </h2>
+
+//             <p>
+//               Create an account to enjoy shopping with amazing deals.
+//             </p>
+
+//             <img
+//               src="https://cdn-icons-png.flaticon.com/512/5087/5087579.png"
+//               className="mt-8 w-40"
+//               alt="signup"
+//             />
+
+//           </div>
+
+//           {/* Right Panel */}
+//           <div className="p-8 w-1/2">
+
+//             <form onSubmit={handleSignup} className="space-y-4">
+
+//               <input
+//                 type="text"
+//                 placeholder="Full Name"
+//                 required
+//                 className="w-full border p-2 rounded"
+//                 value={name}
+//                 onChange={(e) => {
+//                   const value = e.target.value.replace(/[^A-Za-z ]/g, "")
+//                   setName(value)
+//                 }}
+//               />
+
+//               <input
+//                 type="email"
+//                 placeholder="Email"
+//                 required
+//                 className="w-full border p-2 rounded"
+//                 value={email}
+//                 onChange={(e) => setEmail(e.target.value)}
+//               />
+
+//               <input
+//                 type="tel"
+//                 placeholder="Phone Number"
+//                 required
+//                 maxLength={10}
+//                 className="w-full border p-2 rounded"
+//                 value={phone}
+//                 onChange={(e) => {
+//                   const value = e.target.value.replace(/\D/g, "")
+//                   setPhone(value)
+//                 }}
+//               />
+
+//               <input
+//                 type="password"
+//                 placeholder="Password"
+//                 required
+//                 className="w-full border p-2 rounded"
+//                 value={password}
+//                 onChange={(e) => setPassword(e.target.value)}
+//               />
+
+//               <div className="flex gap-2">
+
+//                 <input
+//                   type="text"
+//                   placeholder="Enter OTP"
+//                   className="w-full border p-2 rounded"
+//                   value={otp}
+//                   onChange={(e) => setOtp(e.target.value)}
+//                 />
+
+//                 <button
+//                   type="button"
+//                   onClick={sendOtp}
+//                   className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
+//                 >
+//                   Send OTP
+//                 </button>
+
+//               </div>
+
+//               <div className="flex items-center justify-between text-sm">
+
+//                 <label className="flex items-center gap-2">
+//                   <input
+//                     type="checkbox"
+//                     checked={remember}
+//                     onChange={(e) => setRemember(e.target.checked)}
+//                   />
+//                   Remember me
+//                 </label>
+
+//                 <span className="text-blue-600 hover:underline cursor-pointer">
+//                   Forgot Password?
+//                 </span>
+
+//               </div>
+
+//               <button
+//                 type="submit"
+//                 disabled={loading}
+//                 className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:opacity-50"
+//               >
+//                 {loading ? "Creating..." : "Create Account"}
+//               </button>
+
+//               <p className="text-sm text-center mt-3">
+
+//                 Already have an account?
+
+//                 <span
+//                   className="text-blue-600 cursor-pointer ml-1"
+//                   onClick={() => router.push("/login")}
+//                 >
+//                   Login
+//                 </span>
+
+//               </p>
+
+//             </form>
+
+//           </div>
+
+//         </div>
+
+//       </div>
+
+//     </div>
+//   )
+// }
 
 
 
@@ -666,6 +945,8 @@ export default function SignupPage() {
 // import { useState } from "react"
 // import { useRouter } from "next/navigation"
 // import Navbar from "@/components/Navbar"
+import AddressesPage from '../addresses/page';
+import { Link as LinkIcon } from "lucide-react"
 
 // export default function SignupPage() {
 
